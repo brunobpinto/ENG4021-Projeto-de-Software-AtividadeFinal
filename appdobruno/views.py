@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from .models import PontosTuristicos, CuidadosDicas
-
+from django.contrib.auth.models import User
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+@login_required
 def home(request):
   pontos = PontosTuristicos.objects.all()
   cuidados = CuidadosDicas.objects.all()
@@ -15,7 +18,7 @@ def home(request):
   })
 
 # FUNCOES E FORMS PARA PONTOS TURISTICOS
-
+@login_required
 def create_pontosturisticos(request):
   if request.method == "POST":
     # Criar um novo ponto turistico usando os valores do meu formulário
@@ -29,6 +32,7 @@ def create_pontosturisticos(request):
     return redirect("home")
   return render(request, "forms.html", context={"action": "Adicionar"})
 
+@login_required
 def update_pontosturisticos(request, id):
   pontos = PontosTuristicos.objects.get(id = id)
   if request.method == "POST":
@@ -42,6 +46,7 @@ def update_pontosturisticos(request, id):
     return redirect("home")
   return render(request, "forms.html", context={"action": "Atualizar","pontos": pontos})
 
+@login_required
 def delete_pontosturisticos(request, id):
   pontos = PontosTuristicos.objects.get(id = id)
   if request.method == "POST":
@@ -56,7 +61,7 @@ def delete_pontosturisticos(request, id):
 
 
 # FUNCOES E FORMS PARA CUIDADOS E DICAS
-
+@login_required
 def create_cuidadosdicas(request):
   if request.method == "POST":
     # Criar um novo ponto turistico usando os valores do meu formulário
@@ -70,6 +75,7 @@ def create_cuidadosdicas(request):
 
   return render(request, "forms2.html", context={"action": "Adicionar"})
 
+@login_required
 def update_cuidadosdicas(request, id):
   cuidados = CuidadosDicas.objects.get(id = id)
   if request.method == "POST":
@@ -88,9 +94,7 @@ def update_cuidadosdicas(request, id):
     
   })
 
-
-
-
+@login_required
 def delete_cuidadosdicas(request, id):
   cuidados = CuidadosDicas.objects.get(id = id)
   if request.method == "POST":
@@ -100,3 +104,37 @@ def delete_cuidadosdicas(request, id):
     return redirect("home")
   return render(request, "are_you_sure2.html", context={"cuidados": cuidados})
 
+
+
+def create_user(request):
+  if request.method == "POST":
+    user = User.objects.create_user(
+      request.POST["username"],
+      request.POST["email"], 
+      request.POST["password"]
+    )
+    user.save()
+    return redirect("home")
+  return render(request, "register.html", context={"action": "Adicionar"})
+
+def login_user(request):
+  if request.method == "POST":
+    user = authenticate(
+      username = request.POST["username"],
+      password = request.POST["password"]
+    )
+
+    if user != None:
+      login(request, user)
+    else:
+      return render(request, "login.html", context={"error_msg": "Usuário não existe"})
+    print(request.user)
+    print(request.user.is_authenticated)
+    if request.user.is_authenticated:
+      return redirect("home")
+    return render(request, "login.html", context={"error_msg": "Usuário não pode ser autenticado"})
+  return render(request, "login.html")
+
+def logout_user(request):
+  logout(request)
+  return redirect("login")
