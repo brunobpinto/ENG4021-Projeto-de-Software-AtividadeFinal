@@ -25,3 +25,4 @@ urlpatterns = [
     path('cuidadosdicas', views.create_cuidadosdicas),
     path('cuidadosdicas/update/<id>', views.update_cuidadosdicas),
     path('cuidadosdicas/delete/<id>', views.delete_cuidadosdicas),
+]
